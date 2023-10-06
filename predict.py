@@ -122,9 +122,6 @@ def main(img_pattern: str,
 
 
 if __name__ == '__main__':
-    os.system(
-        "wget http://data.lip6.fr/cadene/pretrainedmodels/inceptionresnetv2-520b38e4.pth --no-check-certificate &&\\ "
-        "cp inceptionresnetv2-520b38e4.pth /run/determined/workdir/.cache/torch/hub/checkpoints/inceptionresnetv2-520b38e4.pth")
     img_path = [os.path.join("testing_set", d) for d in os.listdir("testing_set")]
     for i in img_path:
-        main(i)
+        main(i, out_dir="testing_res")
