@@ -1,4 +1,5 @@
 import os
+import ssl
 from glob import glob
 from typing import Optional
 
@@ -6,7 +7,6 @@ import cv2
 import numpy as np
 import torch
 import yaml
-from fire import Fire
 from tqdm import tqdm
 
 from aug import get_normalize
@@ -15,7 +15,7 @@ from models.networks import get_generator
 
 class Predictor:
     def __init__(self, weights_path: str, model_name: str = ''):
-        with open('config/config.yaml',encoding='utf-8') as cfg:
+        with open('config/config.yaml', encoding='utf-8') as cfg:
             config = yaml.load(cfg, Loader=yaml.FullLoader)
         model = get_generator(model_name or config['model'])
         model.load_state_dict(torch.load(weights_path)['model'])
@@ -68,10 +68,11 @@ class Predictor:
             pred = self.model(*inputs)
         return self._postprocess(pred)[:h, :w, :]
 
+
 def process_video(pairs, predictor, output_dir):
     for video_filepath, mask in tqdm(pairs):
         video_filename = os.path.basename(video_filepath)
-        output_filepath = os.path.join(output_dir, os.path.splitext(video_filename)[0]+'_deblur.mp4')
+        output_filepath = os.path.join(output_dir, os.path.splitext(video_filename)[0] + '_deblur.mp4')
         video_in = cv2.VideoCapture(video_filepath)
         fps = video_in.get(cv2.CAP_PROP_FPS)
         width = int(video_in.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -87,6 +88,7 @@ def process_video(pairs, predictor, output_dir):
             pred = predictor(img, mask)
             pred = cv2.cvtColor(pred, cv2.COLOR_RGB2BGR)
             video_out.write(pred)
+
 
 def main(img_pattern: str,
          mask_pattern: Optional[str] = None,
@@ -119,24 +121,10 @@ def main(img_pattern: str,
     else:
         process_video(pairs, predictor, out_dir)
 
-# def getfiles():
-#     filenames = os.listdir(r'.\dataset1\blur')
-#     print(filenames)
-def get_files():
-    list=[]
-    for filepath,dirnames,filenames in os.walk(r'.\dataset1\blur'):
-        for filename in filenames:
-            list.append(os.path.join(filepath,filename))
-    return list
-
-
-
-
 
 if __name__ == '__main__':
-  #  Fire(main)
-#增加批量处理图片：
-    img_path=get_files()
+    ssl._create_default_https_context = ssl._create_unverified_context
+    ssl.SSLContext.verify_mode = ssl.VerifyMode.CERT_OPTIONAL
+    img_path = [os.path.join("testing_set", d) for d in os.listdir("testing_set")]
     for i in img_path:
         main(i)
-    # main('test_img/tt.mp4')
