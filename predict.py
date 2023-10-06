@@ -1,5 +1,4 @@
 import os
-import ssl
 from glob import glob
 from typing import Optional
 
@@ -131,6 +130,7 @@ if __name__ == '__main__':
 
     old_merge_environment_settings = requests.Session.merge_environment_settings
 
+
     @contextlib.contextmanager
     def no_ssl_verification():
         opened_adapters = set()
@@ -161,6 +161,8 @@ if __name__ == '__main__':
                 except:
                     pass
 
-    img_path = [os.path.join("testing_set", d) for d in os.listdir("testing_set")]
-    for i in img_path:
-        main(i)
+
+    with no_ssl_verification():
+        img_path = [os.path.join("testing_set", d) for d in os.listdir("testing_set")]
+        for i in img_path:
+            main(i)
